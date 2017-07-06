@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 from models.gaussian_process import *
 from mashall.functions import *
 import numpy as np
@@ -31,7 +32,7 @@ y = np.cos(x)#+np.random.normal(0, 1.0e-5, size=400)
 # def g(x):
 #     return x*np.sin(x)
 
-#num_points = 10 
+#num_points = 10
 
 # xt=np.linspace(-20,20,num_points).reshape(num_points,1)
 # x= np.linspace(-20,20,num_points*10).reshape(num_points*10,1)
@@ -41,7 +42,7 @@ y = np.cos(x)#+np.random.normal(0, 1.0e-5, size=400)
 
 model.fit(xt,yt)
 mean, std, ys = model.predict(x)
- 
+
 fig, ax = plt.subplots(1, 1)
 plot_1d(ax,x,y,xt,yt,mean,std)
 

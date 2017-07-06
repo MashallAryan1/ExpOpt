@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division, print_function, unicode_literals
 import matplotlib
 matplotlib.use('Agg')
 import os
@@ -13,7 +13,7 @@ def g(x):
     return np.sum(x*np.sin(x))
 
 # bounding box
-box = np.array([[-3],[3]]) 
+box = np.array([[-3],[3]])
 # number of training points
 n_training = 5
 # dimensionality
@@ -50,23 +50,26 @@ for transfer_func in transfer_funcs:
         # for the description of parameters goto "feed_forward_net.py" and optimization.py
         bbopt = Optimizer( bounding_box=box, init_observatins=[xt,yt]
                             , evaluation_function = g
-                            , cma_popsize=20, cma_max_itr=1, model_type=Bayesian_neural_net
-                            , structure=structure 
+                            , cma_popsize=2, cma_max_itr=1, model_type=Bayesian_neural_net
+                            , structure=structure
                             , transfer_func=transfer_func
                             , num_training_steps=2000
                             , ensemble_size=30
                             , standardize=True)
+        print('initialized')
+        bbopt.search(n_init_steps=4, n_steps = 10)
         fig, axes = plt.subplots(3, 4)
         for ax in np.array(axes).flatten():
+              print ('--')
               next_point,next_pointy = bbopt.step()
-              mean, std,_ = bbopt.model.predict(x)    
+              mean, std,_ = bbopt.model.predict(x)
               plot_1d(ax,x,y,bbopt.observations[0], bbopt.observations[1], mean, std)
               ax.plot(bbopt.best['X'],bbopt.best['Y'],'go')
               ax.plot(next_point,next_pointy,'ro')
-              ax.set_ylim([-10,10])                      
+              ax.set_ylim([-10,10])
               fig.savefig('BNN'+'_'+transfer_func+'_'+'structure'+'_'+str(i)+'.svg')
 
 #if __name__ == '__main__':
-plt.show(host=os.getenv('IP', '0.0.0.0'),port=int(os.getenv('PORT', 8080)), debug=True)
+plt.show()#host=os.getenv('IP', '0.0.0.0'),port=int(os.getenv('PORT', 8080)), debug=True)
 
 print('End')

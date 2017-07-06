@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from sklearn import preprocessing as pre
 import keras
@@ -10,8 +10,11 @@ from keras.layers import Activation, Dropout, BatchNormalization, Dense
 from keras.layers.noise import GaussianDropout
 import numpy as np
 from mashall.utils import *
-class MlpRegressor(object):
-
+class SDropoutRegressor(object):
+    """
+    Implementation of simple dropout net according to
+    Gal Y,Ghahramani Z. "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning", (2016).
+    """
 
     def __init__(self,**kwargs):
         """
@@ -77,7 +80,7 @@ class MlpRegressor(object):
 
         kernel_initializer = {'relu':he_normal,'tanh':glorot_uniform}[self.transfer_func]
         kernel_regularizers = [None]*self.n_layers
-        if self.weight_decay:
+        if self.weight_decay!=None:
             kernel_regularizers=[keras.regularizers.l2(self.weight_decay) for _ in  range(self.n_layers)]
         self.model.add(Dense(self.structure[1],kernel_initializer=kernel_initializer(seed=initseed),kernel_regularizer=kernel_regularizers[0],input_dim=self.structure[0]))
         for layer in range(2,self.n_layers):
@@ -115,11 +118,11 @@ class MlpRegressor(object):
             x = self.scaler.transform(xt)
         y = np.atleast_2d(yt)
         assert xt.shape[0] == yt.shape[0]
-        callbacks = [keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=2000, min_lr=1.0e-5)]
+        callbacks = [keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.2, patience=3000, min_lr=1.0e-5)]
         self.history = LossHistory()
         callbacks += [self.history]
         if self.use_early_stopping:
-            callbacks+=[keras.callbacks.EarlyStopping(monitor='loss', min_delta=1.0e-5, patience=28000, verbose=0, mode='auto')]
+            callbacks+=[keras.callbacks.EarlyStopping(monitor='loss', min_delta=1.0e-5, patience=15000, verbose=0, mode='auto')]
         self.model.fit(x,yt, batch_size= self.batch_size, epochs=self.num_training_steps, callbacks=callbacks)
 #        scores = self.model.evaluate(xt, yt)
 
@@ -216,4 +219,6 @@ class MlpRegressor(object):
     @ensemble_size.setter
     def ensemble_size(self, value):
         self._ensemble_size = value
+
+
 

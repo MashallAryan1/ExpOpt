@@ -1,6 +1,6 @@
-from __future__ import division
+from __future__ import absolute_import, division, print_function, unicode_literals
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import os
 from bboptim.optimization import *
 from models.gaussian_process import GPRegressor
@@ -8,12 +8,12 @@ import unittest
 import numpy as np
 from mashall.functions import *
 from matplotlib import pyplot as plt
-np.random.seed(102)
+np.random.seed(123)
 def g(x):
     return np.sum(x*np.sin(x))
 
 # bounding box
-box = np.array([[-3],[3]]) 
+box = np.array([[-3],[3]])
 # number of training points
 n_training = 5
 # dimensionality
@@ -45,19 +45,28 @@ noise_std = 0.1
 
 bbopt = Optimizer( bounding_box=box, init_observatins=[xt,yt]
                     , evaluation_function = g
-                    , cma_popsize=20, cma_max_itr=1, model_type=GPRegressor
+                    , cma_popsize=20, cma_max_itr=20, model_type=GPRegressor
                     , num_training_steps=500
-                    , standardize=True)
+                    , standardize=True, noise_std = noise_std)
+# for _ in range(20):
+#      bbopt.step()
 fig, axes = plt.subplots(3, 4)
+fig2,axes2= plt.subplots(3, 4)
+axes2f = np.array(axes2).flatten()
+i=0
 for ax in np.array(axes).flatten():
       next_point,next_pointy = bbopt.step()
-      mean, std,_ = bbopt.model.predict(x)    
+      print('-------------------------')
+      mean, std,_ = bbopt.model.predict(x)
+      axes2f[i].plot(x,np.array([bbopt.expected_improvement(xx[0]).squeeze() for xx in x]))
+      i+=1
       plot_1d(ax,x,y,bbopt.observations[0], bbopt.observations[1], mean, std)
       ax.plot(bbopt.best['X'],bbopt.best['Y'],'go')
       ax.plot(next_point,next_pointy,'ro')
-      ax.set_ylim([-10,10])                      
-      fig.savefig('EGO.svg')
-
+      #ax.set_ylim([-10,10])
+print('done')
+      #fig.savefig('EGO.svg')
+plt.show(True)
 #if __name__ == '__main__':
-plt.show(host=os.getenv('IP', '0.0.0.0'),port=int(os.getenv('PORT', 8080)), debug=True)
+#plt.show(host=os.getenv('IP', '0.0.0.0'),port=int(os.getenv('PORT', 8080)), debug=True)
 
